@@ -1,0 +1,56 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{namedoverlays}[2025/12/31 Named overlays for Beamer]
+
+\RequirePackage{pgfkeys}
+
+\newcounter{currentoverlay}[framenumber]
+
+\def\defoverlay#1{
+  \stepcounter{currentoverlay}
+  \edef\currentOverlay{\the\value{currentoverlay}}
+  \expandafter\xdef\csname overlay@#1\endcsname{\currentOverlay}
+}
+\def\endoverlay#1{
+  \edef\currentOverlay{\the\value{currentoverlay}}
+  \expandafter\xdef\csname overlay@#1/.last\endcsname{\currentOverlay}
+}
+\def\overlay#1{
+  \csname overlay@/overlays/\the\value{framenumber}/#1\endcsname
+}
+\newcommand*{\rangeoverlay}[2]{\overlay{#1}-\overlay{#2}}
+\newcommand*{\inoverlay}[1]{\rangeoverlay{#1}{#1/.last}}
+
+\newcommand{\overlay@children}[2]{%
+  \pgfkeys{
+    #1/.unknown/.code={
+      \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
+      \expandafter\overlay@node{\overlay@name}{##1}
+    },
+    #1/.cd,
+    #2
+  }
+}
+
+\newcommand{\overlay@node}[2]{%
+  \defoverlay{#1}
+  \ifx#2\pgfkeysnovalue
+    % leaf
+  \else
+    {\overlay@children{#1}{#2}}
+  \fi
+  \endoverlay{#1}
+}
+
+\newcommand{\setoverlays}[1]{
+  \edef\nextFrameNumber{\the\numexpr\value{framenumber}+1\relax}
+  \pgfkeys{
+    /overlays/\nextFrameNumber/.unknown/.code={
+      \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
+      \expandafter\overlay@node{\overlay@name}{##1}
+    },
+    /overlays/\nextFrameNumber/.cd,#1}
+}
+
+\newcommand{\setoverlaystwo}[1]{
+  \expandafter\setoverlays{\ignorespaces#1}
+}
