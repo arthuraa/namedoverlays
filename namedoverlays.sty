@@ -7,15 +7,15 @@
 
 \def\defoverlay#1{
   \stepcounter{currentoverlay}
-  \edef\currentOverlay{\the\value{currentoverlay}}
-  \expandafter\xdef\csname overlay@#1\endcsname{\currentOverlay}
+  \edef\overlay@current{\the\value{currentoverlay}}
+  \global\pgfkeyslet{#1}{\overlay@current}
 }
 \def\endoverlay#1{
-  \edef\currentOverlay{\the\value{currentoverlay}}
-  \expandafter\xdef\csname overlay@#1/.last\endcsname{\currentOverlay}
+  \edef\overlay@current{\the\value{currentoverlay}}
+  \global\pgfkeyslet{#1/.last}{\overlay@current}
 }
 \def\overlay#1{
-  \csname overlay@/overlays/\the\value{framenumber}/#1\endcsname
+  \pgfkeysvalueof{/overlays/\the\value{framenumber}/#1}
 }
 \newcommand*{\rangeoverlay}[2]{\overlay{#1}-\overlay{#2}}
 \newcommand*{\inoverlay}[1]{\rangeoverlay{#1}{#1/.last}}
@@ -42,15 +42,11 @@
 }
 
 \newcommand{\setoverlays}[1]{
-  \edef\nextFrameNumber{\the\numexpr\value{framenumber}+1\relax}
+  \edef\overlay@nextframe{\the\numexpr\value{framenumber}+1\relax}
   \pgfkeys{
-    /overlays/\nextFrameNumber/.unknown/.code={
+    /overlays/\overlay@nextframe/.unknown/.code={
       \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
       \expandafter\overlay@node{\overlay@name}{##1}
     },
-    /overlays/\nextFrameNumber/.cd,#1}
-}
-
-\newcommand{\setoverlaystwo}[1]{
-  \expandafter\setoverlays{\ignorespaces#1}
+    /overlays/\overlay@nextframe/.cd,#1}
 }
