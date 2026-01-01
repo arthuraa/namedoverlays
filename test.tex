@@ -65,10 +65,8 @@
     A sub part bar
   }
 
-  \visible<\overlay{foo/.last}>{
-    We can refer to the last part of an overlay.  This should be displayed
-    together with the sub part bar.
-  }
+  \visible<\overlay{foo/.last}>{ We can refer to the last part of an overlay.
+    This should be the same as \texttt{foo/bar} }
 
   \visible<\overlay{bar}>{Done!}
 \end{frame}
