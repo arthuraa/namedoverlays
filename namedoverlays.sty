@@ -5,48 +5,50 @@
 
 \newcounter{currentoverlay}[framenumber]
 
-\def\defoverlay#1{
-  \stepcounter{currentoverlay}
-  \edef\overlay@current{\the\value{currentoverlay}}
-  \global\pgfkeyslet{#1}{\overlay@current}
+\def\defoverlay#1{%
+  \stepcounter{currentoverlay}%
+  \edef\overlay@current{\the\value{currentoverlay}}%
+  \global\pgfkeyslet{#1}{\overlay@current}%
 }
-\def\endoverlay#1{
-  \edef\overlay@current{\the\value{currentoverlay}}
-  \global\pgfkeyslet{#1/.last}{\overlay@current}
+\def\endoverlay#1{%
+  \edef\overlay@current{\the\value{currentoverlay}}%
+  \global\pgfkeyslet{#1/.last}{\overlay@current}%
 }
-\def\overlay#1{
-  \pgfkeysvalueof{/overlays/\the\value{framenumber}/#1}
+\def\overlay#1{%
+  \pgfkeysvalueof{/overlays/\the\value{framenumber}/#1}%
 }
 \newcommand*{\rangeoverlay}[2]{\overlay{#1}-\overlay{#2}}
 \newcommand*{\inoverlay}[1]{\rangeoverlay{#1}{#1/.last}}
 
 \newcommand{\overlay@children}[2]{%
-  \pgfkeys{
-    #1/.unknown/.code={
-      \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
-      \overlay@node{\overlay@name}{##1}
-    },
-    #1/.cd,
-    #2
-  }
+  \pgfkeys{%
+    #1/.unknown/.code={%
+      \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}%
+      \overlay@node{\overlay@name}{##1}%
+    },%
+    #1/.cd,%
+    #2%
+  }%
 }
 
 \newcommand{\overlay@node}[2]{%
-  \defoverlay{#1}
-  \ifx#2\pgfkeysnovalue
+  \defoverlay{#1}%
+  \ifx#2\pgfkeysnovalue%
     % leaf
-  \else
-    {\overlay@children{#1}{#2}}
-  \fi
-  \endoverlay{#1}
+  \else%
+    {\overlay@children{#1}{#2}}%
+  \fi%
+  \endoverlay{#1}%
 }
 
-\newcommand{\setoverlays}[1]{
-  \edef\overlay@nextframe{\the\numexpr\value{framenumber}+1\relax}
-  \pgfkeys{
-    /overlays/\overlay@nextframe/.unknown/.code={
-      \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
-      \overlay@node{\overlay@name}{##1}
-    },
-    /overlays/\overlay@nextframe/.cd,#1}
+\newcommand{\setoverlays}[1]{%
+  \edef\overlay@nextframe{\the\numexpr\value{framenumber}+1\relax}%
+  \pgfkeys{%
+    /overlays/\overlay@nextframe/.unknown/.code={%
+      \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}%
+      \overlay@node{\overlay@name}{##1}%
+    },%
+    /overlays/\overlay@nextframe/.cd,%
+    #1%
+  }%
 }
