@@ -4,32 +4,73 @@
 
 \begin{document}
 
+% \setoverlays should be called before the corresponding frame.
+
+\setoverlays{
+  one overlay={
+    with a first part,
+    another part={
+      with one subpart,
+    },
+    and some other part,
+  },
+  another overlay,
+}
+
 \begin{frame}
-  AAA
+  This should be always visible.
+
+  \visible<\overlay{one overlay}>{
+    This is only visible when the first overlay begins
+  }
+
+  \visible<\inoverlay{one overlay}>{
+    This should be visible during the entire first overlay
+  }
+
+  \visible<\overlay{one overlay/with a first part}>{
+    First sub part of first overlay
+  }
+
+  \visible<\inoverlay{one overlay/another part}>{
+    Second sub part of first overlay
+  }
+
+  \visible<\overlay{one overlay/another part/with one subpart}>{
+    A sub sub part
+  }
+
+  \visible<\overlay{one overlay/and some other part}>{
+    Last sub part of first overlay
+  }
+
+  \visible<\overlay{another overlay}>{
+    Final overlay
+  }
 \end{frame}
 
 \setoverlays{
   foo={
-    bar={
-      quux
-    },
-    baz
+    bar,
   },
-  baz
+  bar
 }
 
-\begin{frame}[fragile]
-  \alert<\overlay{foo}->{First to last}
+\begin{frame}
+  This is another frame
 
-  \alert<\inoverlay{foo}>{First to fourth}
+  \visible<\inoverlay{foo}>{Beginning}
 
-  \alert<\overlay{foo/bar}->{Second to last}
+  \visible<\overlay{foo/bar}>{
+    A sub part bar
+  }
 
-  \alert<\overlay{foo/bar/quux}->{Third to last}
+  \visible<\overlay{foo/.last}>{
+    We can refer to the last part of an overlay.  This should be displayed
+    together with the sub part bar.
+  }
 
-  \alert<\overlay{foo/baz}>{Fourth}
-
-  \alert<\overlay{baz}>{Fifth}
+  \visible<\overlay{bar}>{Done!}
 \end{frame}
 
 \end{document}
