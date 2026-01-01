@@ -19,17 +19,17 @@
 }
 
 \begin{frame}[fragile]
-  \only<\overlay{foo}->{First}
+  \alert<\overlay{foo}->{First to last}
 
-  \alert<\inoverlay{foo}>{Second}
+  \alert<\inoverlay{foo}>{First to fourth}
 
-  \alert<\overlay{foo/bar}->{Third}
+  \alert<\overlay{foo/bar}->{Second to last}
 
-  \alert<\overlay{foo/bar/quux}->{Fourth}
+  \alert<\overlay{foo/bar/quux}->{Third to last}
 
-  \only<\overlay{foo/baz}>{Five}
+  \alert<\overlay{foo/baz}>{Fourth}
 
-  \only<\overlay{baz}>{Six}
+  \alert<\overlay{baz}>{Fifth}
 \end{frame}
 
 \end{document}

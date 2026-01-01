@@ -24,7 +24,7 @@
   \pgfkeys{
     #1/.unknown/.code={
       \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
-      \expandafter\overlay@node{\overlay@name}{##1}
+      \overlay@node{\overlay@name}{##1}
     },
     #1/.cd,
     #2
@@ -46,7 +46,7 @@
   \pgfkeys{
     /overlays/\overlay@nextframe/.unknown/.code={
       \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}
-      \expandafter\overlay@node{\overlay@name}{##1}
+      \overlay@node{\overlay@name}{##1}
     },
     /overlays/\overlay@nextframe/.cd,#1}
 }
