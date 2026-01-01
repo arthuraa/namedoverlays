@@ -3,23 +3,36 @@
 
 \RequirePackage{pgfkeys}
 
+% The number of the overlay we are currently defining.
 \newcounter{currentoverlay}[framenumber]
 
-\def\defoverlay#1{%
+% \overlay@def{path} begins the definition of an overlay under "path", which
+% should be a relative PGF path.
+\def\overlay@def#1{%
   \stepcounter{currentoverlay}%
   \edef\overlay@current{\the\value{currentoverlay}}%
+  % HACK: Though this is not officially documented in pgfkeys, adding "\global"
+  % here makes the definition global.  We put this here because "\overlay@def"
+  % can be called in several nested groups.
   \global\pgfkeyslet{#1}{\overlay@current}%
 }
-\def\endoverlay#1{%
+% \overlay@end{path} ends the definition of the overlay path.
+\def\overlay@end#1{%
   \edef\overlay@current{\the\value{currentoverlay}}%
+  % HACK: Ditto above.
   \global\pgfkeyslet{#1/.last}{\overlay@current}%
 }
+% \overlay{path} expands to the overlay number associated with the path "path".
 \def\overlay#1{%
   \pgfkeysvalueof{/overlays/\the\value{framenumber}/#1}%
 }
 \newcommand*{\rangeoverlay}[2]{\overlay{#1}-\overlay{#2}}
+% \inoverlay{path} expands to a range comprising every overlay defined inside of
+% "path".
 \newcommand*{\inoverlay}[1]{\rangeoverlay{#1}{#1/.last}}
 
+% \overlay@children{path}{children} sets up all overlay definitions in
+% "children" using "path" as the suffix.
 \newcommand{\overlay@children}[2]{%
   \pgfkeys{%
     #1/.unknown/.code={%
@@ -31,17 +44,25 @@
   }%
 }
 
+% \overlay@node{path}{children} sets up the overlay "path" and its (possibly
+% empty) set of children.
 \newcommand{\overlay@node}[2]{%
-  \defoverlay{#1}%
+  \overlay@def{#1}%
   \ifx#2\pgfkeysnovalue%
-    % leaf
+    % If there are no children, we do not do anything.
   \else%
+    % If there are children, we process them recursively. We wrap the call in a
+    % group to restore the definition of \overlay@name after we are done.
     {\overlay@children{#1}{#2}}%
   \fi%
-  \endoverlay{#1}%
+  \overlay@end{#1}%
 }
 
+% \setoverlays{overlays} sets up all overlays declared in "overlays".  It should
+% be called just before the frame to which it applies.
 \newcommand{\setoverlays}[1]{%
+  % Since this should be called outside of the corresponding frame, we need to
+  % shift the frame counter by one.
   \edef\overlay@nextframe{\the\numexpr\value{framenumber}+1\relax}%
   \pgfkeys{%
     /overlays/\overlay@nextframe/.unknown/.code={%
