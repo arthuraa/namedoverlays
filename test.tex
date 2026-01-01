@@ -1,0 +1,35 @@
+\documentclass{beamer}
+
+\usepackage{namedoverlays}
+
+\begin{document}
+
+\begin{frame}
+  AAA
+\end{frame}
+
+\setoverlays{
+  foo={
+    bar={
+      quux
+    },
+    baz
+  },
+  baz
+}
+
+\begin{frame}[fragile]
+  \only<\overlay{foo}->{First}
+
+  \alert<\inoverlay{foo}>{Second}
+
+  \alert<\overlay{foo/bar}->{Third}
+
+  \alert<\overlay{foo/bar/quux}->{Fourth}
+
+  \only<\overlay{foo/baz}>{Five}
+
+  \only<\overlay{baz}>{Six}
+\end{frame}
+
+\end{document}
