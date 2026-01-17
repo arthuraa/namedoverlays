@@ -107,9 +107,9 @@
 \def\olto#1#2{{\overlay@get{#1}{.first}}-{\overlay@get{#2}{.last}}}
 \def\ol#1{\olto{#1}{#1}}
 
-% \setoverlays{overlays} sets up all overlays declared in "overlays".  It should
-% be called just before the frame to which it applies.
-\newcommand{\setoverlays}[1]{%
+% \overlays{overlays} sets up all overlays declared in "overlays".  It should be
+% called just before the frame to which it applies.
+\newcommand{\overlays}[1]{%
   % Since this should be called outside of the corresponding frame, we need to
   % shift the frame counter by one.
   \edef\overlay@nextframe{\the\numexpr\value{framenumber}+1\relax}%
