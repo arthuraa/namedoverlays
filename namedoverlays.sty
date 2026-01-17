@@ -3,37 +3,55 @@
 
 \RequirePackage{pgfkeys}
 
-% The number of the overlay we are currently defining.
-\newcounter{currentoverlay}[framenumber]
+% The namedoverlays package allows declaring named Beamer overlay
+% specifications.  For example, consider the following declaration:
+%
+% \setoverlays{
+%   first={
+%     first sub,
+%     other sub,
+%   },
+%   other={
+%     first sub,
+%     other sub,
+%   },
+% }
+%
+% This declares six specifications:
+%
+% first -> 1-2
+% first/first sub -> 1
+% first/other sub -> 2
+% other -> 3-4
+% other/first sub -> 3
+% other/other sub -> 4
+%
+% "first" and "other" are compound specifications, which comprise several
+% slides.  The remaining ones are atomic specifications, which comprise only one
+% slide.
 
-% \overlay@def{path} begins the definition of an overlay under "path", which
-% should be a relative PGF path.
-\def\overlay@def#1{%
-  \stepcounter{currentoverlay}%
-  \edef\overlay@current{\the\value{currentoverlay}}%
+% The number of slides we have already covered
+\newcounter{slidecount}[framenumber]
+
+% \overlay@begin{path} begins the definition of an overlay specification under
+% "path", which should be a relative PGF path.
+\def\overlay@begin#1{%
+  \edef\overlay@firstslide{\the\numexpr\value{slidecount}+1\relax}%
   % HACK: Though this is not officially documented in pgfkeys, adding "\global"
-  % here makes the definition global.  We put this here because "\overlay@def"
+  % here makes the definition global.  We put this here because "\overlay@begin"
   % can be called in several nested groups.
-  \global\pgfkeyslet{#1}{\overlay@current}%
+  \global\pgfkeyslet{#1/.first}{\overlay@firstslide}%
 }
-% \overlay@end{path} ends the definition of the overlay path.
+% \overlay@end{path} ends the definition of the overlay specification "path".
 \def\overlay@end#1{%
-  \edef\overlay@current{\the\value{currentoverlay}}%
+  \edef\overlay@lastslide{\the\value{slidecount}}%
   % HACK: Ditto above.
-  \global\pgfkeyslet{#1/.last}{\overlay@current}%
+  \global\pgfkeyslet{#1/.last}{\overlay@lastslide}%
 }
-% \overlay{path} expands to the overlay number associated with the path "path".
-\def\overlay#1{%
-  \pgfkeysvalueof{/overlays/\the\value{framenumber}/#1}%
-}
-\newcommand*{\rangeoverlay}[2]{\overlay{#1}-\overlay{#2}}
-% \inoverlay{path} expands to a range comprising every overlay defined inside of
-% "path".
-\newcommand*{\inoverlay}[1]{\rangeoverlay{#1}{#1/.last}}
 
 % \overlay@children{path}{children} sets up all overlay definitions in
-% "children" using "path" as the suffix.
-\newcommand{\overlay@children}[2]{%
+% "children" using "path" as the prefix.
+\def\overlay@children#1#2{%
   \pgfkeys{%
     #1/.unknown/.code={%
       \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}%
@@ -44,19 +62,50 @@
   }%
 }
 
-% \overlay@node{path}{children} sets up the overlay "path" and its (possibly
-% empty) set of children.
-\newcommand{\overlay@node}[2]{%
-  \overlay@def{#1}%
+% \overlay@node{path}{children} sets up the specification "path" and its
+% (possibly empty) set of children.
+\def\overlay@node#1#2{%
+  \overlay@begin{#1}%
   \ifx#2\pgfkeysnovalue%
-    % If there are no children, we do not do anything.
+    % If there are no children, this is an atomic specification, so we move to
+    % the next slide.
+    \stepcounter{slidecount}%
   \else%
-    % If there are children, we process them recursively. We wrap the call in a
+    % If there are children, we process them recursively. We do not step the
+    % counter because a compound specification does not correspond to any
+    % particular slide; only its leaves do.  We wrap the recursive call in a
     % group to restore the definition of \overlay@name after we are done.
     {\overlay@children{#1}{#2}}%
   \fi%
   \overlay@end{#1}%
 }
+
+% \overlay@path{path} computes the absolute PGF path corresponding to "path",
+% given the current frame.
+\def\overlay@path#1{/overlays/frame/\the\value{framenumber}/#1}
+
+% \overlay@get{path}{firstorlast} returns the number of the slide corresponding
+% to the overlay specification "path". "firstorlast" must be either ".first" (in
+% which case the first slide is returned) or ".last" (for the last slide).  If
+% "path" this empty, this refers to the entire frame.
+\def\overlay@get#1#2{%
+  \ifx\relax#1\relax%
+    % If the first argument is empty, we are referring to the entire frame.
+    \pgfkeysvalueof{\overlay@path{#2}}%
+  \else%
+    % Otherwise, we are referring to a subset of the slides.
+    \pgfkeysvalueof{\overlay@path{#1/#2}}%
+  \fi%
+}
+
+
+% User facing commands
+
+% \olto{o1}{o2} expands to the range of slides from the beginning of o1 to the
+% end of o2.  Either one can be empty, in which case they refer to the entire
+% set of slides.  The short form \ol{o} stands for \olto{o}{o}
+\def\olto#1#2{{\overlay@get{#1}{.first}}-{\overlay@get{#2}{.last}}}
+\def\ol#1{\olto{#1}{#1}}
 
 % \setoverlays{overlays} sets up all overlays declared in "overlays".  It should
 % be called just before the frame to which it applies.
@@ -65,11 +114,11 @@
   % shift the frame counter by one.
   \edef\overlay@nextframe{\the\numexpr\value{framenumber}+1\relax}%
   \pgfkeys{%
-    /overlays/\overlay@nextframe/.unknown/.code={%
+    /overlays/frame/.unknown/.code={%
       \edef\overlay@name{\pgfkeyscurrentpath/\pgfkeyscurrentname}%
       \overlay@node{\overlay@name}{##1}%
     },%
-    /overlays/\overlay@nextframe/.cd,%
-    #1%
+    /overlays/frame/.cd,%
+    \overlay@nextframe={#1},%
   }%
 }

@@ -7,68 +7,31 @@
 % \setoverlays should be called before the corresponding frame.
 
 \setoverlays{
-  one overlay={
-    with a first part,
-    another part={
-      with one subpart,
-    },
-    and some other part,
+  first={
+    first sub,
+    other sub,
   },
-  another overlay,
+  other={
+    first sub,
+    other sub,
+  },
 }
 
-\begin{frame}
-  This should be always visible.
-
-  \visible<\overlay{one overlay}>{
-    This is only visible when the first overlay begins
-  }
-
-  \visible<\inoverlay{one overlay}>{
-    This should be visible during the entire first overlay
-  }
-
-  \visible<\overlay{one overlay/with a first part}>{
-    First sub part of first overlay
-  }
-
-  \visible<\inoverlay{one overlay/another part}>{
-    Second sub part of first overlay
-  }
-
-  \visible<\overlay{one overlay/another part/with one subpart}>{
-    A sub sub part
-  }
-
-  \visible<\overlay{one overlay/and some other part}>{
-    Last sub part of first overlay
-  }
-
-  \visible<\overlay{another overlay}>{
-    Final overlay
-  }
-\end{frame}
-
-\setoverlays{
-  foo={
-    bar,
-  },
-  bar
-}
-
-\begin{frame}
-  This is another frame
-
-  \visible<\inoverlay{foo}>{Beginning}
-
-  \visible<\overlay{foo/bar}>{
-    A sub part bar
-  }
-
-  \visible<\overlay{foo/.last}>{ We can refer to the last part of an overlay.
-    This should be the same as \texttt{foo/bar} }
-
-  \visible<\overlay{bar}>{Done!}
+\begin{frame}{First slide}
+  \begin{itemize}
+  \item<\olto{first}{other/first sub}>
+    \texttt{first} $\to$ \texttt{other/first sub}
+  \item<\ol{first}> \texttt{first}
+    \begin{itemize}
+    \item<\ol{first/first sub}> \texttt{first sub}
+    \item<\ol{first/other sub}> \texttt{other sub}
+    \end{itemize}
+  \item<\ol{other}> \texttt{other}
+    \begin{itemize}
+    \item<\ol{other/first sub}> \texttt{first sub}
+    \item<\ol{other/other sub}> \texttt{other sub}
+    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}
